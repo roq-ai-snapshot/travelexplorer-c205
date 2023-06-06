@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model destination {
+  id                String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String             @db.VarChar(255)
+  description       String?
+  travel_planner_id String             @db.Uuid
+  travel_planner    travel_planner     @relation(fields: [travel_planner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  recommendation    recommendation[]
+  user_destination  user_destination[]
+  user_feedback     user_feedback[]
+}
+
+model recommendation {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title               String                @db.VarChar(255)
+  description         String?
+  destination_id      String                @db.Uuid
+  destination         destination           @relation(fields: [destination_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user_recommendation user_recommendation[]
+}
+
+model travel_planner {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String        @db.VarChar(255)
+  user_id     String        @db.Uuid
+  destination destination[]
+  user        user          @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id                  String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email               String                @unique @db.VarChar(255)
+  firstName           String?               @db.VarChar(255)
+  lastName            String?               @db.VarChar(255)
+  roq_user_id         String                @db.VarChar(255)
+  tenant_id           String                @db.VarChar(255)
+  travel_planner      travel_planner[]
+  user_destination    user_destination[]
+  user_feedback       user_feedback[]
+  user_recommendation user_recommendation[]
+}
+
+model user_destination {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id        String      @db.Uuid
+  destination_id String      @db.Uuid
+  destination    destination @relation(fields: [destination_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           user        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_feedback {
+  id             String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  rating         Int
+  comment        String?
+  user_id        String      @db.Uuid
+  destination_id String      @db.Uuid
+  destination    destination @relation(fields: [destination_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user           user        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_recommendation {
+  id                String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id           String         @db.Uuid
+  recommendation_id String         @db.Uuid
+  recommendation    recommendation @relation(fields: [recommendation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  user              user           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
